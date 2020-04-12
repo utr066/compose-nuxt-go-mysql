@@ -1,0 +1,38 @@
+version: '3'
+services:
+  nuxt-app:
+    # Dockerfileの場所
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    working_dir: /frontend
+    command: yarn run dev
+    # ホストOSとコンテナ内でソースコードを共有する
+    volumes:
+      - ./frontend:/frontend
+    # コンテナ内部の3000を外部から5000でアクセスする
+    ports:
+      - 5000:3000
+  go-app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    working_dir: /backend
+    # docker-compose run実行時に実行される
+    command: go run main.go
+    volumes:
+      - ./backend:/backend
+    ports:
+      - "8080:8080"
+  db:
+    image: mysql:5.7
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mysql_dev
+      MYSQL_USER: U
+      MYSQL_PASSWORD: passw0rd
+    ports:
+      - "3306:3306"
